@@ -756,7 +756,7 @@ function makeAddHandlers(inputId, addBtnId, polBtnId, getKeyFn, statusId, reload
   const stat = document.getElementById(statusId);
   
   const doAdd = (items) => {
-    const key = getKeyFn();
+    const key = "goals:" + getKeyFn();
     let goals = storeGet(key) || [];
     goals.push(...items);
     storeSet(key, goals);
