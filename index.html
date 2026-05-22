@@ -1,327 +1,131 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم الشخصية للنشاط والعافية</title>
-    <style>
-        :root {
-            --bg-color: #f0f4f8;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --primary-color: #3b82f6;
-            --success-color: #10b981;
-            --danger-color: #ef4444;
-            --accent-color: #8b5cf6;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Dashboard</title>
+<style>
+  :root {
+    --text-primary: #FAFAFA;
+    --text-secondary: #B8B6B0;
+    --text-tertiary: #76746E;
+    --success: #6BE3A4;
+    --warning: #F2C063;
+    --danger: #FF6B6B;
+    --mono-font: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --body-font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-        }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
+  body {
+    background-color: #050506;
+    color: var(--text-primary);
+    font-family: var(--body-font);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: max(20px, env(safe-area-inset-top)) 20px 60px;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+  /* Washes and Grain */
+  .bg-washes {
+    position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  }
+  .wash-1, .wash-2 {
+    position: absolute; border-radius: 50%; filter: blur(40px);
+    animation: drift 36s infinite alternate ease-in-out;
+  }
+  .wash-1 {
+    width: 60vw; height: 60vw; background: rgba(224, 118, 88, 0.16);
+    top: 14%; left: 82%; transform: translate(-50%, -50%);
+  }
+  .wash-2 {
+    width: 70vw; height: 70vw; background: rgba(180, 180, 200, 0.06);
+    top: 90%; left: 18%; transform: translate(-50%, -50%);
+    animation-delay: -18s;
+  }
+  @keyframes drift {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    100% { transform: translate(-40%, -60%) scale(1.1); }
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image: radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px);
+    background-size: 3px 3px; opacity: 0.014;
+  }
 
-        header h1 {
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
+  .container {
+    width: 100%; max-width: 1100px; display: flex; flex-direction: column;
+  }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
+  /* Comp 1 - Title */
+  .dash-title {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.025em;
+    background: linear-gradient(180deg, #FFFFFF 0%, #C7C4BC 120%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 14px; text-align: left;
+  }
+  @media (max-width: 480px) { .dash-title { font-size: 22px; } }
 
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s;
-        }
+  /* Comp 2 - Goal Ticker */
+  .ticker-row { margin-bottom: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .goal-ticker {
+    display: flex; flex-direction: row; align-items: center; gap: 10px;
+    padding: 7px 12px; border-radius: 12px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.30) 100%);
+    background-image: linear-gradient(180deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.30) 100%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    position: relative; overflow: hidden;
+  }
+  .goal-ticker::after {
+    content: ''; position: absolute; top: 0; left: -40%; width: 30%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+    animation: sweep 8s infinite linear; pointer-events: none;
+  }
+  @keyframes sweep { 100% { left: 110%; } }
+  .goal-ticker-led-dot {
+    display: block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success); box-shadow: 0 0 8px rgba(107,227,164,0.7);
+    animation: pulse 1.6s infinite ease-in-out;
+  }
+  @keyframes pulse { 50% { opacity: 0.45; transform: scale(0.85); } }
+  .goal-ticker-label {
+    font-family: var(--mono-font); font-size: 9.5px; font-weight: 800;
+    letter-spacing: 0.18em; color: var(--text-tertiary);
+  }
+  .goal-ticker-stage { flex: 1; height: 22px; position: relative; overflow: hidden; }
+  .goal-ticker-row {
+    display: flex; align-items: center; gap: 8px; height: 22px; width: 100%;
+    font-family: var(--mono-font); font-size: 12.5px; font-weight: 600;
+    font-variant-numeric: tabular-nums; white-space: nowrap; position: absolute;
+  }
+  .goal-ticker-status { width: 18px; text-align: center; }
+  .goal-ticker-status[data-status="done"] { color: var(--success); }
+  .goal-ticker-status[data-status="pending"], .goal-ticker-status[data-status="empty"] { color: var(--text-tertiary); }
+  .goal-ticker-text { flex: 1; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary); }
+  .goal-ticker-meta {
+    font-family: var(--mono-font); font-size: 11px; font-weight: 700;
+    font-variant-numeric: tabular-nums; color: var(--text-secondary);
+    letter-spacing: 0.04em; padding: 3px 8px; border-radius: 999px;
+    background: rgba(255,255,255,0.04); flex-shrink: 0;
+  }
+  .is-leaving { animation: ticker-leave 0.45s cubic-bezier(0.55, 0, 0.55, 1) forwards; }
+  .is-entering { animation: ticker-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  @keyframes ticker-leave { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100%); } }
+  @keyframes ticker-enter { 0% { opacity: 0; transform: translateY(100%); } 100% { opacity: 1; transform: translateY(0); } }
 
-        .card:hover {
-            transform: translateY(-2px);
-        }
-
-        .card h2 {
-            margin-top: 0;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 10px;
-            color: #4a5568;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* قسم المياه */
-        .water-progress {
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            margin: 20px 0;
-            color: var(--primary-color);
-        }
-
-        .btn-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-
-        button:hover {
-            background-color: #2563eb;
-        }
-
-        button.btn-danger {
-            background-color: var(--danger-color);
-        }
-
-        button.btn-danger:hover {
-            background-color: #dc2626;
-        }
-
-        /* قسم المهام */
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .input-group input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        li {
-            padding: 12px;
-            background-color: #f8fafc;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s;
-            border-right: 4px solid var(--accent-color);
-        }
-
-        li.completed {
-            text-decoration: line-through;
-            opacity: 0.6;
-            background-color: #e2e8f0;
-            border-right-color: #94a3b8;
-        }
-
-        .delete-btn {
-            background: none;
-            border: none;
-            color: var(--danger-color);
-            cursor: pointer;
-            font-size: 16px;
-            padding: 0 5px;
-        }
-
-        /* قسم الجيم والفيتامينات */
-        .checkbox-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f8fafc;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .checkbox-item input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <header>
-        <h1>لوحة التحكم الصحية والشخصية</h1>
-        <p>تابع عاداتك اليومية ونشاطك الرياضي بكل سهولة</p>
-    </header>
-
-    <div class="grid">
-        <div class="card">
-            <h2>💧 تتبع شرب المياه</h2>
-            <div class="water-progress"><span id="water-count">0</span> / 8 أكواب</div>
-            <div class="btn-grid">
-                <button onclick="addWater()">+ كوب مياه</button>
-                <button class="btn-danger" onclick="resetWater()">إعادة تعيين</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>📝 المهام اليومية (اضغط للشطب)</h2>
-            <div class="input-group">
-                <input type="text" id="todo-input" placeholder="أضف مهمة جديدة...">
-                <button onclick="addTodo()">إضافة</button>
-            </div>
-            <ul id="todo-list">
-                </ul>
-        </div>
-
-        <div class="card">
-            <h2>💊 الفيتامينات والمكملات</h2>
-            <div class="checkbox-group">
-                <label class="checkbox-item">
-                    <input type="checkbox" id="vit-1">
-                    <span>فيتامين متعدد (Multivitamin)</span>
-                </label>
-                <label class="checkbox-item">
-                    <input type="checkbox" id="vit-2">
-                    <span>أوميغا 3 (Omega 3)</span>
-                </label>
-                <label class="checkbox-item">
-                    <input type="checkbox" id="vit-3">
-                    <span>فيتامين د (Vitamin D)</span>
-                </label>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>🏋️‍♂️ التمارين والنشاط الرياضي</h2>
-            <div class="checkbox-group">
-                <label class="checkbox-item">
-                    <input type="checkbox" id="gym-1">
-                    <span>تمارين الإحماء والتمديد (Stretching)</span>
-                </label>
-                <label class="checkbox-item">
-                    <input type="checkbox" id="gym-2">
-                    <span>حصتي التدريبية في الجيم (Workout)</span>
-                </label>
-                <label class="checkbox-item">
-                    <input type="checkbox" id="gym-3">
-                    <span>تناول وجبة ما بعد التمرين</span>
-                </label>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    // --- منطق تتبع المياه ---
-    let waterCount = localStorage.getItem('waterCount') ? parseInt(localStorage.getItem('waterCount')) : 0;
-    document.getElementById('water-count').innerText = waterCount;
-
-    function addWater() {
-        if(waterCount < 8) {
-            waterCount++;
-            document.getElementById('water-count').innerText = waterCount;
-            localStorage.setItem('waterCount', waterCount);
-        }
-    }
-
-    function resetWater() {
-        waterCount = 0;
-        document.getElementById('water-count').innerText = waterCount;
-        localStorage.setItem('waterCount', waterCount);
-    }
-
-    // --- منطق المهام اليومية ---
-    let todos = localStorage.getItem('todos') ? JSON.parse(localStorage.getItem('todos')) : [];
-    
-    function renderTodos() {
-        const list = document.getElementById('todo-list');
-        list.innerHTML = '';
-        todos.forEach((todo, index) => {
-            const li = document.createElement('li');
-            li.className = todo.completed ? 'completed' : '';
-            li.innerHTML = `
-                <span onclick="toggleTodo(${index})">${todo.text}</span>
-                <button class="delete-btn" onclick="deleteTodo(event, ${index})">❌</button>
-            `;
-            list.appendChild(li);
-        });
-    }
-
-    function addTodo() {
-        const input = document.getElementById('todo-input');
-        if(input.value.trim() !== '') {
-            todos.push({ text: input.value.trim(), completed: false });
-            input.value = '';
-            saveAndRenderTodos();
-        }
-    }
-
-    function toggleTodo(index) {
-        todos[index].completed = !todos[index].completed;
-        saveAndRenderTodos();
-    }
-
-    function deleteTodo(event, index) {
-        event.stopPropagation(); // لمنع تفعيل الشطب عند الضغط على زر الحذف
-        todos.splice(index, 1);
-        saveAndRenderTodos();
-    }
-
-    function saveAndRenderTodos() {
-        localStorage.setItem('todos', JSON.stringify(todos));
-        renderTodos();
-    }
-
-    // --- منطق الفيتامينات والتمارين (حفظ التحديد تلقائياً) ---
-    const checkBoxes = ['vit-1', 'vit-2', 'vit-3', 'gym-1', 'gym-2', 'gym-3'];
-    
-    checkBoxes.forEach(id => {
-        const element = document.getElementById(id);
-        // استعادة الحالة عند تحميل الصفحة
-        element.checked = localStorage.getItem(id) === 'true';
-        // حفظ الحالة عند التغيير
-        element.addEventListener('change', () => {
-            localStorage.setItem(id, element.checked);
-        });
-    });
-
-    // تشغيل العرض الأولي للمهام عند فتح الصفحة
-    renderTodos();
-</script>
-
-</body>
-</html>
+  /* Comp 3 - Day Ring */
+  .day-ring-section {
+    display: flex; align-items: center; justify-content: center; gap: 26px;
+    margin-bottom: 40px; flex-wrap: wrap; width: 100%;
+  }
+  .ring-wrapper { position: relative; width: 168px; height: 168px; flex-shrink: 0; }
+  .ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 8; }
+  .ring-fill {
