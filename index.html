@@ -3,339 +3,325 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اللوحة الشاملة: الصحة والمالية</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>لوحة التحكم الشخصية للنشاط والعافية</title>
     <style>
         :root {
-            --bg-primary: #0a0e17;
-            --bg-secondary: #161f30;
-            --accent-color: #00e676;
-            --text-main: #ffffff;
-            --text-muted: #8b9bb4;
-            --danger: #ff5252;
-            --finance-color: #ffb300;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --primary-color: #3b82f6;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --accent-color: #8b5cf6;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { background-color: var(--bg-primary); color: var(--text-main); padding-bottom: 75px; direction: rtl; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
 
-        /* شريط التنبيهات المتحرك العلوي */
-        .ticker-wrap { width: 100%; background-color: #000; overflow: hidden; height: 35px; display: flex; align-items: center; border-bottom: 1px solid #1f2d44; }
-        .ticker { display: flex; white-space: nowrap; animation: ticker 25s linear infinite; }
-        .ticker__item { display: inline-block; padding: 0 2rem; font-size: 0.85rem; color: var(--accent-color); }
-        @keyframes ticker { 0% { transform: translate3d(100%, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
 
-        header { padding: 15px; text-align: center; border-bottom: 1px solid var(--bg-secondary); }
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .card { background-color: var(--bg-secondary); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #24344d; }
-        h2 { font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        
-        .flex-row { display: flex; gap: 8px; margin-bottom: 12px; }
-        input, select, button { background: #202e45; border: 1px solid #2d405e; color: white; padding: 10px; border-radius: 8px; font-size: 0.95rem; }
-        input[type="text"], input[type="number"], select { flex: 1; }
-        button { cursor: pointer; background-color: var(--accent-color); color: #000; font-weight: bold; border: none; }
-        
-        ul { list-style: none; }
-        li { background: #1d293e; padding: 10px; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
-        .completed { text-decoration: line-through; color: var(--text-muted); opacity: 0.5; }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
-        .flash-red { animation: pulse-red 1.5s infinite; border: 1px solid var(--danger); }
-        @keyframes pulse-red { 0%, 100% { background-color: #161f30; } 50% { background-color: #421c1c; } }
+        header h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
 
-        /* شريط التنقل السفلي */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #0d1524; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #1f2d44; z-index: 1000; }
-        .nav-item { color: var(--text-muted); background: none; border: none; display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; gap: 4px; cursor: pointer; }
-        .nav-item.active { color: var(--accent-color); }
-        .nav-item.active i { color: var(--accent-color); }
-        .nav-item i { font-size: 1.2rem; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
 
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-box { background: #111a2e; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #1f2d44; }
-        .stat-val { font-size: 1.2rem; font-weight: bold; margin-top: 5px; }
-        .chart-container { position: relative; margin: 15px auto; height: 200px; width: 200px; }
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* قسم المياه */
+        .water-progress {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--primary-color);
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #2563eb;
+        }
+
+        button.btn-danger {
+            background-color: var(--danger-color);
+        }
+
+        button.btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        /* قسم المهام */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            padding: 12px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            border-right: 4px solid var(--accent-color);
+        }
+
+        li.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+            background-color: #e2e8f0;
+            border-right-color: #94a3b8;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 5px;
+        }
+
+        /* قسم الجيم والفيتامينات */
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-item input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <div class="ticker-wrap">
-        <div class="ticker" id="ticker-text">
-            <div class="ticker__item" id="ticker-sub-alert"><i class="fa-solid fa-bell"></i> لا توجد اشتراكات قريبة مستحقة الدفع.</div>
-            <div class="ticker__item"><i class="fa-solid fa-droplet"></i> حافظ على رطوبة جسدك واشرب الماء بانتظام.</div>
-        </div>
-    </div>
-
+<div class="container">
     <header>
-        <h1 style="font-size: 1.3rem;">لوحة التحكم الشاملة v3</h1>
+        <h1>لوحة التحكم الصحية والشخصية</h1>
+        <p>تابع عاداتك اليومية ونشاطك الرياضي بكل سهولة</p>
     </header>
 
-    <div class="container">
-        
-        <div id="main-tab" class="tab-content active">
-            <div class="card">
-                <h2><i class="fa-solid fa-list-check" style="color: #ffb300;"></i> المهام اليومية</h2>
-                <div class="flex-row">
-                    <input type="text" id="todo-input" placeholder="أضف مهمة جديدة لشطبها...">
-                    <button onclick="addTodo()"><i class="fa-solid fa-plus"></i></button>
-                </div>
-                <ul id="todo-list"></ul>
-            </div>
-
-            <div class="card">
-                <h2><i class="fa-solid fa-droplet" style="color: #00b0ff;"></i> تتبع شرب الماء الذكي</h2>
-                <div style="font-size: 1.4rem; font-weight: bold; text-align: center; margin: 10px 0; color: #00b0ff;" id="water-display">0 / 3000 مل</div>
-                <div class="flex-row">
-                    <button style="background-color: #00b0ff; color: white; flex: 1;" onclick="addWater(250)">+ 250 مل</button>
-                    <button style="background-color: #0091ea; color: white; flex: 1;" onclick="addWater(500)">+ 500 مل</button>
-                    <button style="background-color: var(--danger); color: white;" onclick="resetWater()"><i class="fa-solid fa-trash"></i></button>
-                </div>
+    <div class="grid">
+        <div class="card">
+            <h2>💧 تتبع شرب المياه</h2>
+            <div class="water-progress"><span id="water-count">0</span> / 8 أكواب</div>
+            <div class="btn-grid">
+                <button onclick="addWater()">+ كوب مياه</button>
+                <button class="btn-danger" onclick="resetWater()">إعادة تعيين</button>
             </div>
         </div>
 
-        <div id="health-tab" class="tab-content">
-            <div class="card" id="supp-card">
-                <h2><i class="fa-solid fa-capsules" style="color: #ff5252;"></i> الفيتامينات والمكملات</h2>
-                <ul>
-                    <li>
-                        <div><strong>Creatine (مونوهيدرات)</strong><small style="display:block;color:var(--text-muted);">الغداء - 5 جرام</small></div>
-                        <input type="checkbox" id="supp1" onchange="saveSupps()">
-                    </li>
-                    <li>
-                        <div><strong>Magnesium Glycinate</strong><small style="display:block;color:var(--text-muted);">قبل النوم - جرعة واحدة</small></div>
-                        <input type="checkbox" id="supp2" onchange="saveSupps()">
-                    </li>
+        <div class="card">
+            <h2>📝 المهام اليومية (اضغط للشطب)</h2>
+            <div class="input-group">
+                <input type="text" id="todo-input" placeholder="أضف مهمة جديدة...">
+                <button onclick="addTodo()">إضافة</button>
+            </div>
+            <ul id="todo-list">
                 </ul>
-            </div>
+        </div>
 
-            <div class="card">
-                <h2><i class="fa-solid fa-dumbbell" style="color: var(--accent-color);"></i> مدرب الأحمال التدريبية (Gym)</h2>
-                <div class="flex-row">
-                    <input type="text" id="gym-name" placeholder="اسم التمرين">
-                    <input type="number" id="gym-weight" placeholder="الوزن (كجم)">
-                    <button onclick="addWorkout()">سجل</button>
-                </div>
-                <div id="gym-alert" style="display:none; background:#1b4332; padding:10px; border-radius:8px; margin-bottom:10px; color: var(--accent-color); font-size:0.85rem;">
-                    <i class="fa-solid fa-circle-check"></i> رائع! حققت الهدف، زد الوزن 2 كجم المرة القادمة!
-                </div>
-                <ul id="gym-list"></ul>
+        <div class="card">
+            <h2>💊 الفيتامينات والمكملات</h2>
+            <div class="checkbox-group">
+                <label class="checkbox-item">
+                    <input type="checkbox" id="vit-1">
+                    <span>فيتامين متعدد (Multivitamin)</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="vit-2">
+                    <span>أوميغا 3 (Omega 3)</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="vit-3">
+                    <span>فيتامين د (Vitamin D)</span>
+                </label>
             </div>
         </div>
 
-        <div id="finance-tab" class="tab-content">
-            <div class="card">
-                <h2><i class="fa-solid fa-wallet" style="color: var(--finance-color);"></i> ملخص الثروة وصافي الأصول</h2>
-                <div class="stat-grid">
-                    <div class="stat-box">
-                        <span style="font-size:0.8rem; color:var(--text-muted);">صافي الثروة</span>
-                        <div class="stat-val" id="net-worth-val" style="color: var(--accent-color);">$0</div>
-                    </div>
-                    <div class="stat-box">
-                        <span style="font-size:0.8rem; color:var(--text-muted);">مؤشر الأمان (قاعدة 1%)</span>
-                        <div class="stat-val" id="one-percent-val" style="color: #00b0ff;">$0</div>
-                    </div>
-                </div>
-                
-                <div class="chart-container">
-                    <canvas id="financeChart"></canvas>
-                </div>
-
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    <div class="flex-row">
-                        <span style="width:90px; align-self:center;">البنك:</span>
-                        <input type="number" id="fin-bank" oninput="updateFinance()" placeholder="0">
-                    </div>
-                    <div class="flex-row">
-                        <span style="width:90px; align-self:center;">الاستثمار:</span>
-                        <input type="number" id="fin-invest" oninput="updateFinance()" placeholder="0">
-                    </div>
-                    <div class="flex-row">
-                        <span style="width:90px; align-self:center;">العملات الرقمية:</span>
-                        <input type="number" id="fin-crypto" oninput="updateFinance()" placeholder="0">
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2><i class="fa-solid fa-rotate-left" style="color: #ff5252;"></i> تتبع الاشتراكات الدورية</h2>
-                <div class="flex-row">
-                    <input type="text" id="sub-name" placeholder="اسم الاشتراك">
-                    <input type="number" id="sub-cost" placeholder="التكلفة">
-                    <input type="number" id="sub-day" placeholder="يوم التجديد المالي (1-31)" min="1" max="31">
-                    <button onclick="addSubscription()"><i class="fa-solid fa-plus"></i></button>
-                </div>
-                <ul id="sub-list"></ul>
+        <div class="card">
+            <h2>🏋️‍♂️ التمارين والنشاط الرياضي</h2>
+            <div class="checkbox-group">
+                <label class="checkbox-item">
+                    <input type="checkbox" id="gym-1">
+                    <span>تمارين الإحماء والتمديد (Stretching)</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="gym-2">
+                    <span>حصتي التدريبية في الجيم (Workout)</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="gym-3">
+                    <span>تناول وجبة ما بعد التمرين</span>
+                </label>
             </div>
         </div>
-
     </div>
+</div>
 
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchTab('main-tab', this)">
-            <i class="fa-solid fa-house"></i><span>الرئيسية</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('health-tab', this)">
-            <i class="fa-solid fa-heart-pulse"></i><span>الصحة والرياضة</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('finance-tab', this)">
-            <i class="fa-solid fa-chart-line"></i><span>المالية الذكية</span>
-        </button>
-    </nav>
+<script>
+    // --- منطق تتبع المياه ---
+    let waterCount = localStorage.getItem('waterCount') ? parseInt(localStorage.getItem('waterCount')) : 0;
+    document.getElementById('water-count').innerText = waterCount;
 
-    <script>
-        let chartInstance = null;
-
-        function switchTab(tabId, el) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            el.classList.add('active');
-            if(tabId === 'finance-tab') initChart();
+    function addWater() {
+        if(waterCount < 8) {
+            waterCount++;
+            document.getElementById('water-count').innerText = waterCount;
+            localStorage.setItem('waterCount', waterCount);
         }
+    }
 
-        // --- الميزات المالية ---
-        let financeData = JSON.parse(localStorage.getItem('fin_data')) || { bank: 0, invest: 0, crypto: 0 };
-        let subscriptions = JSON.parse(localStorage.getItem('subs')) || [];
+    function resetWater() {
+        waterCount = 0;
+        document.getElementById('water-count').innerText = waterCount;
+        localStorage.setItem('waterCount', waterCount);
+    }
 
-        function loadFinanceInputs() {
-            document.getElementById('fin-bank').value = financeData.bank || '';
-            document.getElementById('fin-invest').value = financeData.invest || '';
-            document.getElementById('fin-crypto').value = financeData.crypto || '';
-            calculateNetWorth();
+    // --- منطق المهام اليومية ---
+    let todos = localStorage.getItem('todos') ? JSON.parse(localStorage.getItem('todos')) : [];
+    
+    function renderTodos() {
+        const list = document.getElementById('todo-list');
+        list.innerHTML = '';
+        todos.forEach((todo, index) => {
+            const li = document.createElement('li');
+            li.className = todo.completed ? 'completed' : '';
+            li.innerHTML = `
+                <span onclick="toggleTodo(${index})">${todo.text}</span>
+                <button class="delete-btn" onclick="deleteTodo(event, ${index})">❌</button>
+            `;
+            list.appendChild(li);
+        });
+    }
+
+    function addTodo() {
+        const input = document.getElementById('todo-input');
+        if(input.value.trim() !== '') {
+            todos.push({ text: input.value.trim(), completed: false });
+            input.value = '';
+            saveAndRenderTodos();
         }
+    }
 
-        function updateFinance() {
-            financeData.bank = Number(document.getElementById('fin-bank').value);
-            financeData.invest = Number(document.getElementById('fin-invest').value);
-            financeData.crypto = Number(document.getElementById('fin-crypto').value);
-            localStorage.setItem('fin_data', JSON.stringify(financeData));
-            calculateNetWorth();
-            if(chartInstance) updateChartData();
-        }
+    function toggleTodo(index) {
+        todos[index].completed = !todos[index].completed;
+        saveAndRenderTodos();
+    }
 
-        function calculateNetWorth() {
-            let total = financeData.bank + financeData.invest + financeData.crypto;
-            document.getElementById('net-worth-val').innerText = `$${total.toLocaleString()}`;
-            document.getElementById('one-percent-val').innerText = `$${(total * 0.01).toLocaleString()}`;
-        }
+    function deleteTodo(event, index) {
+        event.stopPropagation(); // لمنع تفعيل الشطب عند الضغط على زر الحذف
+        todos.splice(index, 1);
+        saveAndRenderTodos();
+    }
 
-        function initChart() {
-            const ctx = document.getElementById('financeChart').getContext('2d');
-            if(chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['البنك', 'الاستثمار', 'العملات الرقمية'],
-                    datasets: [{
-                        data: [financeData.bank, financeData.invest, financeData.crypto],
-                        backgroundColor: ['#00b0ff', '#00e676', '#ffb300'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-        }
-
-        function updateChartData() {
-            chartInstance.data.datasets[0].data = [financeData.bank, financeData.invest, financeData.crypto];
-            chartInstance.update();
-        }
-
-        function renderSubs() {
-            const list = document.getElementById('sub-list');
-            list.innerHTML = '';
-            let closestAlert = false;
-            
-            subscriptions.forEach((sub, idx) => {
-                const li = document.createElement('li');
-                // إذا كان التجديد خلال أقل من 5 أيام يومض باللون الأحمر للتنبيه الفوري
-                let currentDay = new Date().getDate();
-                let daysLeft = sub.day - currentDay;
-                if(daysLeft >= 0 && daysLeft <= 5) {
-                    li.classList.add('flash-red');
-                    closestAlert = true;
-                }
-
-                li.innerHTML = `
-                    <div><strong>${sub.name}</strong><small style="display:block;color:var(--text-muted);">$${sub.cost} - يجدد يوم ${sub.day}</small></div>
-                    <i class="fa-solid fa-trash" style="color:var(--danger); cursor:pointer;" onclick="deleteSub(${idx})"></i>
-                `;
-                list.appendChild(li);
-            });
-
-            document.getElementById('ticker-sub-alert').innerHTML = closestAlert 
-                ? `<i class="fa-solid fa-triangle-exclamation" style="color:var(--danger);"></i> تنبيه: لديك اشتراكات مالية تقترب مواعيد تجديدها!` 
-                : `<i class="fa-solid fa-bell"></i> كافة اشتراكاتك المالية في وضع آمن ودقيق.`;
-
-            localStorage.setItem('subs', JSON.stringify(subscriptions));
-        }
-
-        function addSubscription() {
-            const name = document.getElementById('sub-name').value;
-            const cost = Number(document.getElementById('sub-cost').value);
-            const day = Number(document.getElementById('sub-day').value);
-            if(!name || !cost || !day) return;
-            subscriptions.push({ name, cost, day });
-            document.getElementById('sub-name').value = '';
-            document.getElementById('sub-cost').value = '';
-            document.getElementById('sub-day').value = '';
-            renderSubs();
-        }
-
-        function deleteSub(idx) { subscriptions.splice(idx, 1); renderSubs(); }
-
-        // --- الميزات الصحية والرياضية والمهام من الحلقات السابقة ---
-        let todos = JSON.parse(localStorage.getItem('todos')) || [];
-        function renderTodos() {
-            const list = document.getElementById('todo-list'); list.innerHTML = '';
-            todos.forEach((t, i) => {
-                const li = document.createElement('li');
-                li.innerHTML = `<span class="${t.completed ? 'completed' : ''}" onclick="toggleTodo(${i})" style="cursor:pointer;flex:1;">${t.text}</span><i class="fa-solid fa-trash" style="color:var(--danger);cursor:pointer;" onclick="deleteTodo(${i})"></i>`;
-                list.appendChild(li);
-            });
-            localStorage.setItem('todos', JSON.stringify(todos));
-        }
-        function addTodo() { const inp = document.getElementById('todo-input'); if(!inp.value.trim()) return; todos.push({text:inp.value, completed:false}); inp.value=''; renderTodos(); }
-        function toggleTodo(i) { todos[i].completed = !todos[i].completed; renderTodos(); }
-        function deleteTodo(i) { todos.splice(i,1); renderTodos(); }
-
-        let water = parseInt(localStorage.getItem('water')) || 0;
-        function updateWater() { document.getElementById('water-display').innerText = `${water} / 3000 مل`; localStorage.setItem('water', water); }
-        function addWater(amt) { water += amt; updateWater(); }
-        function resetWater() { water = 0; updateWater(); }
-
-        let workouts = JSON.parse(localStorage.getItem('workouts')) || [];
-        function renderWorkouts() {
-            const list = document.getElementById('gym-list'); list.innerHTML = '';
-            workouts.forEach(w => { const li = document.createElement('li'); li.innerHTML = `<span>${w.name}</span><strong>${w.weight} كجم</strong>`; list.appendChild(li); });
-            localStorage.setItem('workouts', JSON.stringify(workouts));
-        }
-        function addWorkout() {
-            const n = document.getElementById('gym-name').value; const w = document.getElementById('gym-weight').value;
-            if(!n || !w) return; workouts.unshift({name:n, weight:w});
-            document.getElementById('gym-alert').style.display = 'block';
-            setTimeout(() => document.getElementById('gym-alert').style.display='none', 4000);
-            document.getElementById('gym-name').value=''; document.getElementById('gym-weight').value='';
-            renderWorkouts();
-        }
-
-        function saveSupps() {
-            localStorage.setItem('s1', document.getElementById('supp1').checked);
-            localStorage.setItem('s2', document.getElementById('supp2').checked);
-        }
-        function loadSupps() {
-            document.getElementById('supp1').checked = localStorage.getItem('s1') === 'true';
-            document.getElementById('supp2').checked = localStorage.getItem('s2') === 'true';
-        }
-
-        // تشغيل أولي لكافة المكونات
-        loadFinanceInputs();
-        renderSubs();
+    function saveAndRenderTodos() {
+        localStorage.setItem('todos', JSON.stringify(todos));
         renderTodos();
-        updateWater();
-        renderWorkouts();
-        loadSupps();
-    </script>
+    }
+
+    // --- منطق الفيتامينات والتمارين (حفظ التحديد تلقائياً) ---
+    const checkBoxes = ['vit-1', 'vit-2', 'vit-3', 'gym-1', 'gym-2', 'gym-3'];
+    
+    checkBoxes.forEach(id => {
+        const element = document.getElementById(id);
+        // استعادة الحالة عند تحميل الصفحة
+        element.checked = localStorage.getItem(id) === 'true';
+        // حفظ الحالة عند التغيير
+        element.addEventListener('change', () => {
+            localStorage.setItem(id, element.checked);
+        });
+    });
+
+    // تشغيل العرض الأولي للمهام عند فتح الصفحة
+    renderTodos();
+</script>
+
 </body>
 </html>
