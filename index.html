@@ -470,10 +470,6 @@ const ANTHROPIC_API_KEY = ''; // Add key here for Polish functionality
 const SUPABASE_URL = 'https://djhgsyqeogxqtnqxmiuy.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqaGdzeXFlb2d4cXRucXhtaXV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MzAzNTcsImV4cCI6MjA5NTEwNjM1N30.UNbaHjeIOt6tytnSBNfeetZZFCqG-ZrwPlr-6sMvf6Y';
 
-/** SUPABASE INITIALIZATION */
-const SUPABASE_URL = 'https://djhgsyqeogxqtnqxmiuy.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqaGdzeXFlb2d4cXRucXhtaXV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MzAzNTcsImV4cCI6MjA5NTEwNjM1N30.UNbaHjeIOt6tytnSBNfeetZZFCqG-ZrwPlr-6sMvf6Y';
-
 let supabaseClient = null;
 // تم إصلاح الكائن العام ليكون window.supabase بدلاً من window.supabaseClient
 if (typeof window.supabase !== 'undefined' && SUPABASE_ANON_KEY !== 'PASTE_YOUR_FULL_SUPABASE_ANON_KEY_HERE') {
@@ -501,20 +497,6 @@ async function syncFromSupabase() {
   if (!supabaseClient) return;
   try {
     const { data, error } = await supabaseClient.from('daily_goals').select('*');
-    if (data && !error) {
-      data.forEach(row => {
-        localStorage.setItem(`goals:${row.date}`, JSON.stringify(row.goals));
-      });
-      loadToday();
-      loadTomorrow();
-      window.dispatchEvent(new CustomEvent('goals-changed'));
-    }
-  } catch (e) {
-    console.error('Supabase fetch error:', e);
-  }
-}
-  try {
-    const { data, error } = await supabase.from('daily_goals').select('*');
     if (data && !error) {
       data.forEach(row => {
         localStorage.setItem(`goals:${row.date}`, JSON.stringify(row.goals));
