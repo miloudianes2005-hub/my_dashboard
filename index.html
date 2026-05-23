@@ -470,9 +470,14 @@ const ANTHROPIC_API_KEY = ''; // Add key here for Polish functionality
 const SUPABASE_URL = 'https://djhgsyqeogxqtnqxmiuy.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqaGdzeXFlb2d4cXRucXhtaXV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MzAzNTcsImV4cCI6MjA5NTEwNjM1N30.UNbaHjeIOt6tytnSBNfeetZZFCqG-ZrwPlr-6sMvf6Y';
 
+/** SUPABASE INITIALIZATION */
+const SUPABASE_URL = 'https://djhgsyqeogxqtnqxmiuy.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqaGdzeXFlb2d4cXRucXhtaXV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MzAzNTcsImV4cCI6MjA5NTEwNjM1N30.UNbaHjeIOt6tytnSBNfeetZZFCqG-ZrwPlr-6sMvf6Y';
+
 let supabaseClient = null;
-if (typeof window.supabaseClient !== 'undefined' && SUPABASE_ANON_KEY !== 'PASTE_YOUR_FULL_SUPABASE_ANON_KEY_HERE') {
-  supabaseClient = window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// تم إصلاح الكائن العام ليكون window.supabase بدلاً من window.supabaseClient
+if (typeof window.supabase !== 'undefined' && SUPABASE_ANON_KEY !== 'PASTE_YOUR_FULL_SUPABASE_ANON_KEY_HERE') {
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
 /** STATE & HELPERS */
@@ -481,10 +486,10 @@ const storeSet = (key, val) => {
   localStorage.setItem(key, JSON.stringify(val)); 
   window.dispatchEvent(new CustomEvent('goals-changed')); 
   
-  // Asynchronously back up to Supabase cloud in background
-  if (supabase) {
+  // تم تغيير supabase إلى supabaseClient هنا
+  if (supabaseClient) {
     const dateStr = key.replace('goals:', '');
-    supabase.from('daily_goals').upsert({ date: dateStr, goals: val }, { onConflict: 'date' })
+    supabaseClient.from('daily_goals').upsert({ date: dateStr, goals: val }, { onConflict: 'date' })
       .then(({ error }) => { if (error) console.error('Supabase backup error:', error); });
   }
 };
@@ -492,7 +497,22 @@ const storeDelete = (key) => { localStorage.removeItem(key); window.dispatchEven
 
 // Fetch Cloud Data to synchronize local cache
 async function syncFromSupabase() {
-  if (!supabase) return;
+  // تم تغيير supabase إلى supabaseClient هنا
+  if (!supabaseClient) return;
+  try {
+    const { data, error } = await supabaseClient.from('daily_goals').select('*');
+    if (data && !error) {
+      data.forEach(row => {
+        localStorage.setItem(`goals:${row.date}`, JSON.stringify(row.goals));
+      });
+      loadToday();
+      loadTomorrow();
+      window.dispatchEvent(new CustomEvent('goals-changed'));
+    }
+  } catch (e) {
+    console.error('Supabase fetch error:', e);
+  }
+}
   try {
     const { data, error } = await supabase.from('daily_goals').select('*');
     if (data && !error) {
