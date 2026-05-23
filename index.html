@@ -470,9 +470,9 @@ const ANTHROPIC_API_KEY = ''; // Add key here for Polish functionality
 const SUPABASE_URL = 'https://djhgsyqeogxqtnqxmiuy.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqaGdzeXFlb2d4cXRucXhtaXV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MzAzNTcsImV4cCI6MjA5NTEwNjM1N30.UNbaHjeIOt6tytnSBNfeetZZFCqG-ZrwPlr-6sMvf6Y';
 
-let supabase = null;
-if (typeof window.supabase !== 'undefined' && SUPABASE_ANON_KEY !== 'PASTE_YOUR_FULL_SUPABASE_ANON_KEY_HERE') {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabaseClient = null;
+if (typeof window.supabaseClient !== 'undefined' && SUPABASE_ANON_KEY !== 'PASTE_YOUR_FULL_SUPABASE_ANON_KEY_HERE') {
+  supabaseClient = window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
 /** STATE & HELPERS */
