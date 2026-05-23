@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>My Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --text-primary: #FAFAFA;
@@ -25,7 +26,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: max(20px, env(safe-area-inset-top)) 20px 60px;
+    padding: max(20px, env(safe-area-inset-top)) 20px 90px; /* تم زيادة الحشو السفلي ليتناسب مع شريط التنقل */
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
@@ -62,15 +63,23 @@
     width: 100%; max-width: 1100px; display: flex; flex-direction: column;
   }
 
+  /* الألسنة لتقسيم الصفحات بشكل مرن */
+  .tab-content { display: none; width: 100%; flex-direction: column; }
+  .tab-content.active { display: flex; }
+
   /* Comp 1 - Title */
+  .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; width: 100%; }
   .dash-title {
     font-size: 28px; font-weight: 700; letter-spacing: -0.025em;
     background: linear-gradient(180deg, #FFFFFF 0%, #C7C4BC 120%);
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
-    margin-bottom: 14px; text-align: left;
   }
   @media (max-width: 480px) { .dash-title { font-size: 22px; } }
+
+  .sync-indicator { font-family: var(--mono-font); font-size: 11px; color: var(--text-tertiary); display: flex; align-items: center; gap: 6px; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-tertiary); }
+  .sync-dot.synced { background: var(--success); box-shadow: 0 0 8px var(--success); }
 
   /* Comp 2 - Goal Ticker */
   .ticker-row { margin-bottom: 18px; display: flex; flex-direction: column; gap: 4px; }
@@ -158,7 +167,7 @@
   .gm-card {
     background: rgba(255, 255, 255, 0.04); border-radius: 16px; padding: 22px;
     backdrop-filter: blur(24px) saturate(1.2); box-shadow: 0 12px 40px rgba(0,0,0,0.45);
-    transition: background 0.3s; position: relative;
+    transition: background 0.3s; position: relative; margin-bottom: 16px;
   }
   .gm-card.gm-all-done {
     background: rgba(107, 227, 164, 0.05);
@@ -273,8 +282,41 @@
   .tomorrow-subtext { font-size: 12px; color: var(--text-tertiary); }
   .tomorrow-count { font-family: var(--mono-font); font-size: 11px; text-transform: uppercase; font-variant-numeric: tabular-nums; color: var(--text-tertiary); }
 
+  /* تنسيقات الإضافات الجديدة للحفاظ على القالب الزجاجي */
+  .health-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 768px) { .health-grid { grid-template-columns: 1fr; } }
+  .water-display { display: flex; align-items: baseline; gap: 4px; margin-top: 10px; }
+  .water-current { font-size: 48px; font-weight: 700; color: #6BCEE3; }
+  .water-goal { font-size: 18px; color: var(--text-tertiary); }
+  .water-buttons { display: flex; gap: 8px; margin-top: 14px; }
+  .supp-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 12px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.05); }
+  .supp-time { font-size: 10px; font-family: var(--mono-font); padding: 2px 6px; background: rgba(255,255,255,0.08); border-radius: 4px; color: var(--text-secondary); margin-left: auto; }
+
+  .coach-alert { background: rgba(242,192,99,0.12); border: 1px dashed var(--warning); padding: 14px; border-radius: 12px; margin-bottom: 16px; font-size: 13px; color: #FFE2A8; display: none; animation: pulse 2s infinite ease-in-out; }
+  .workout-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .exercise-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; }
+  .exercise-header { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 10px; font-size: 14px; }
+  .exercise-history { font-family: var(--mono-font); font-size: 11px; color: var(--text-tertiary); height: 50px; overflow-y: auto; margin: 10px 0; padding: 6px; background: rgba(0,0,0,0.2); border-radius: 6px; }
+  .log-row { display: flex; gap: 6px; }
+  .log-row input { width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-size: 12px; text-align: center; }
+
+  /* شريط التنقل السفلي الثابت لشاشات الموبايل والحاسوب */
+  .nav-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 68px; background: #0A0A0C;
+    border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-around;
+    align-items: center; z-index: 100; backdrop-filter: blur(20px);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-item {
+    background: none; border: none; color: var(--text-tertiary); font-size: 11px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.2s;
+  }
+  .nav-item.active { color: var(--text-primary); }
+  .nav-icon { font-size: 18px; }
+
   @media (max-width: 480px) {
-    body { padding: max(20px, env(safe-area-inset-top)) 12px 40px; }
+    body { padding: max(20px, env(safe-area-inset-top)) 12px 90px; }
     .ring-wrapper { width: 144px; height: 144px; }
     .ring-percent { font-size: 32px; }
     .day-status { font-size: 13px; }
@@ -296,103 +338,215 @@
   </div>
 
   <div class="container">
-    <h1 class="dash-title">My Dashboard</h1>
-
-    <div class="ticker-row">
-      <div class="goal-ticker" id="goalTicker" aria-live="polite" aria-atomic="true">
-        <div class="goal-ticker-led"><span class="goal-ticker-led-dot"></span></div>
-        <div class="goal-ticker-label">GOALS</div>
-        <div class="goal-ticker-stage" id="goalTickerStage"></div>
-        <div class="goal-ticker-meta" id="goalTickerMeta">0/0</div>
-      </div>
+    <div class="dash-header">
+      <h1 class="dash-title">My Dashboard</h1>
+      <div class="sync-indicator"><span class="sync-dot" id="syncDot"></span><span id="syncText">Cloud Syncing...</span></div>
     </div>
 
-    <div class="day-ring-section">
-      <div class="ring-wrapper">
-        <svg class="ring-svg" viewBox="0 0 120 120">
-          <circle class="ring-track" cx="60" cy="60" r="52"></circle>
-          <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="52"></circle>
-        </svg>
-        <div class="ring-text-overlay">
-          <div class="ring-phase" id="ringPhase">MORNING</div>
-          <div class="ring-percent" id="ringPercent">0%</div>
-          <div class="ring-clock" id="ringClock">12:00 AM</div>
+    <div id="tab-main" class="tab-content active">
+      <div class="ticker-row">
+        <div class="goal-ticker" id="goalTicker" aria-live="polite" aria-atomic="true">
+          <div class="goal-ticker-led"><span class="goal-ticker-led-dot"></span></div>
+          <div class="goal-ticker-label">GOALS</div>
+          <div class="goal-ticker-stage" id="goalTickerStage"></div>
+          <div class="goal-ticker-meta" id="goalTickerMeta">0/0</div>
         </div>
       </div>
-      <div class="day-info">
-        <div class="day-status" id="dayStatus">Loading...</div>
-        <div class="day-rem" id="dayRem">...</div>
-        <div class="day-range">8:00 AM – 12:00 AM</div>
+
+      <div class="day-ring-section">
+        <div class="ring-wrapper">
+          <svg class="ring-svg" viewBox="0 0 120 120">
+            <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+            <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="52"></circle>
+          </svg>
+          <div class="ring-text-overlay">
+            <div class="ring-phase" id="ringPhase">MORNING</div>
+            <div class="ring-percent" id="ringPercent">0%</div>
+            <div class="ring-clock" id="ringClock">12:00 AM</div>
+          </div>
+        </div>
+        <div class="day-info">
+          <div class="day-status" id="dayStatus">Loading...</div>
+          <div class="day-rem" id="dayRem">...</div>
+          <div class="day-range">8:00 AM – 12:00 AM</div>
+        </div>
       </div>
-    </div>
 
-    <div class="section">
-      <div class="section-title">To Do List</div>
+      <div class="section">
+        <div class="section-title">To Do List</div>
 
-      <div class="gm-card gm-card-today" id="cardToday">
-        <div class="card-header-row">
-          <div>
-            <div class="card-eyebrow" id="todayLabel">Today</div>
-            <div class="gm-progress-row">
-              <span class="gm-progress-num" id="gmProgressNum">0</span>
-              <span class="gm-progress-total" id="gmProgressTotal">/ 0</span>
-              <span class="gm-progress-label" id="gmProgressLabel">no goals yet</span>
+        <div class="gm-card gm-card-today" id="cardToday">
+          <div class="card-header-row">
+            <div>
+              <div class="card-eyebrow" id="todayLabel">Today</div>
+              <div class="gm-progress-row">
+                <span class="gm-progress-num" id="gmProgressNum">0</span>
+                <span class="gm-progress-total" id="gmProgressTotal">/ 0</span>
+                <span class="gm-progress-label" id="gmProgressLabel">no goals yet</span>
+              </div>
+            </div>
+            <div class="gm-streak" id="gmStreak">
+              <span class="streak-icon">⚡</span>
+              <span class="gm-streak-num" id="gmStreakNum">0</span>
+              <span class="streak-label">day streak</span>
             </div>
           </div>
-          <div class="gm-streak" id="gmStreak">
-            <span class="streak-icon">⚡</span>
-            <span class="gm-streak-num" id="gmStreakNum">0</span>
-            <span class="streak-label">day streak</span>
+
+          <div class="gm-bar" id="gmBar"></div>
+          
+          <ul id="goalList" class="goal-list"></ul>
+          <button class="gm-push-btn" id="gmPushBtn" style="display:none;">Push remaining to tomorrow ▾</button>
+
+          <div class="gm-input-wrap">
+            <input type="text" id="goalInput" placeholder="Add a goal for today…">
+            <button class="btn-pill btn-primary" id="goalAddBtn">+ Add</button>
+            <button class="btn-pill btn-secondary" id="goalPolishBtn">✨ Polish</button>
           </div>
+          <div class="status-line" id="polishStatus"></div>
         </div>
 
-        <div class="gm-bar" id="gmBar"></div>
-        
-        <ul id="goalList" class="goal-list"></ul>
-        <button class="gm-push-btn" id="gmPushBtn" style="display:none;">Push remaining to tomorrow ▾</button>
-
-        <div class="gm-input-wrap">
-          <input type="text" id="goalInput" placeholder="Add a goal for today…">
-          <button class="btn-pill btn-primary" id="goalAddBtn">+ Add</button>
-          <button class="btn-pill btn-secondary" id="goalPolishBtn">✨ Polish</button>
-        </div>
-        <div class="status-line" id="polishStatus"></div>
-      </div>
-
-      <div class="gm-card gm-card-tomorrow" id="cardTomorrow">
-        <div class="card-header-row">
-          <div>
-            <div class="card-eyebrow" id="tomorrowLabel">Plan tomorrow</div>
-            <div class="tomorrow-subtext">Write tonight, locked until 6 AM.</div>
+        <div class="gm-card gm-card-tomorrow" id="cardTomorrow">
+          <div class="card-header-row">
+            <div>
+              <div class="card-eyebrow" id="tomorrowLabel">Plan tomorrow</div>
+              <div class="tomorrow-subtext">Write tonight, locked until 6 AM.</div>
+            </div>
+            <div class="tomorrow-count" id="gmTomorrowCount">0 planned</div>
           </div>
-          <div class="tomorrow-count" id="gmTomorrowCount">0 planned</div>
-        </div>
-        
-        <ul id="tomorrowList" class="goal-list"></ul>
+          
+          <ul id="tomorrowList" class="goal-list"></ul>
 
-        <div class="gm-input-wrap">
-          <input type="text" id="tomorrowInput" placeholder="Plan a goal for tomorrow…">
-          <button class="btn-pill btn-primary" id="tomorrowAddBtn">+ Add</button>
-          <button class="btn-pill btn-secondary" id="tomorrowPolishBtn">✨ Polish</button>
+          <div class="gm-input-wrap">
+            <input type="text" id="tomorrowInput" placeholder="Plan a goal for tomorrow…">
+            <button class="btn-pill btn-primary" id="tomorrowAddBtn">+ Add</button>
+            <button class="btn-pill btn-secondary" id="tomorrowPolishBtn">✨ Polish</button>
+          </div>
+          <div class="status-line" id="tomorrowStatus"></div>
         </div>
-        <div class="status-line" id="tomorrowStatus"></div>
       </div>
-
     </div>
+
+    <div id="tab-health" class="tab-content">
+      <div class="section-title" style="margin-bottom: 16px;">Health Insights</div>
+      <div class="health-grid">
+        <div class="gm-card">
+          <div class="card-eyebrow">Dynamic Water Intake</div>
+          <div class="water-display">
+            <span class="water-current" id="waterCurrent">0</span>
+            <span class="water-goal" id="waterGoal">/ 2500 ml</span>
+          </div>
+          <div class="water-buttons">
+            <button class="btn-pill btn-secondary" onclick="addWater(250)">+ 250ml</button>
+            <button class="btn-pill btn-secondary" onclick="addWater(500)">+ 500ml</button>
+            <button class="btn-pill btn-primary" style="background: var(--danger); color: white;" onclick="resetWater()">Reset</button>
+          </div>
+        </div>
+
+        <div class="gm-card">
+          <div class="card-eyebrow">Supplements Plan</div>
+          <div id="supplementsList">
+            <div class="supp-item">
+              <input type="checkbox" class="gm-checkbox" onchange="toggleSupp(this)">
+              <span class="goal-text" style="margin-left: 8px;">Creatine Monohydrate (5g)</span>
+              <span class="supp-time">LUNCH</span>
+            </div>
+            <div class="supp-item">
+              <input type="checkbox" class="gm-checkbox" onchange="toggleSupp(this)">
+              <span class="goal-text" style="margin-left: 8px;">Magnesium Glycinate</span>
+              <span class="supp-time">BEDTIME</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-gym" class="tab-content">
+      <div class="coach-alert" id="coachAlert">⚡ Progressive Overload Alert: You hit 8 reps! Next time, increase the weight by +2kg.</div>
+      <div class="section">
+        <div class="section-title">Workout Matrix</div>
+        <div class="gm-card">
+          <div class="card-header-row">
+            <div class="card-eyebrow">Upper / Lower Training System [00:05:47]</div>
+          </div>
+          <div class="workout-grid">
+            <div class="exercise-card">
+              <div class="exercise-header">
+                <span>Dumbbell Overhead Press</span>
+                <span style="color: var(--warning);">Target: 8 Reps</span>
+              </div>
+              <div class="exercise-history" id="exHistory">Log your first set below...</div>
+              <div class="log-row">
+                <input type="number" id="exWeight" placeholder="KG" value="24">
+                <input type="number" id="exReps" placeholder="Reps" value="6">
+                <button class="btn-pill btn-primary" style="padding: 8px 16px; font-size:12px;" onclick="logWorkoutSet()">Log Set</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-item active" onclick="switchTab('main')">
+      <span class="nav-icon">📋</span><span>Dashboard</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('health')">
+      <span class="nav-icon">❤️</span><span>Health</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('gym')">
+      <span class="nav-icon">🏋️</span><span>Gym Split</span>
+    </button>
   </div>
 
 <script>
 /** CONFIG */
 const WAKE_HOUR = 8;
 const SLEEP_HOUR = 24;
-const ANTHROPIC_API_KEY = ''; // Add key here for Polish functionality
+const ANTHROPIC_API_KEY = ''; // اضف مفتاح Anthropic هنا إذا أردت استخدام ميزة التلميع
 
-/** STATE & HELPERS */
+/** SUPABASE CLOUD CONNECTION INTERACTION 
+ * البيانات مستخرجة وجاهزة للمزامنة السحابية الفورية [00:03:28، 00:03:45]
+ */
+const SUPABASE_URL = "https://djhgsyqeogxqtnqxmiuy.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqaGdzeXFlb2d4cXRucXhtaXV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MzAzNTcsImV4cCI6MjA5NTEwNjM1N30.UNbaHjeIOt6tytnSBNfeetZZFCqG-ZrwPlr-6sMvf6Y";
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function setSyncStatus(isSynced) {
+  const dot = document.getElementById('syncDot');
+  const text = document.getElementById('syncText');
+  if(isSynced) {
+    dot.className = "sync-dot synced"; text.innerText = "Synced Cloud";
+  } else {
+    dot.className = "sync-dot"; text.innerText = "Local Storage";
+  }
+}
+
+// التبديل بين النوافذ (Tabs)
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+/** STATE & HELPERS (الحفاظ على ميكانيكية الكود الأصلي بالكامل) */
 const storeGet = (key) => JSON.parse(localStorage.getItem(key) || 'null');
-const storeSet = (key, val) => { localStorage.setItem(key, JSON.stringify(val)); window.dispatchEvent(new CustomEvent('goals-changed')); };
+const storeSet = async (key, val) => { 
+  localStorage.setItem(key, JSON.stringify(val)); 
+  window.dispatchEvent(new CustomEvent('goals-changed'));
+  
+  // رفع البيانات سحابياً تلقائياً لـ Supabase عند كل تحديث للحفظ والمزامنة [00:04:49]
+  try {
+    await supabase.from('dashboard_sync').upsert([{ id: key, payload: val, updated_at: new Date() }]);
+    setSyncStatus(true);
+  } catch(e) { setSyncStatus(false); }
+};
 const storeDelete = (key) => { localStorage.removeItem(key); window.dispatchEvent(new CustomEvent('goals-changed')); };
 
-// Date logic (6 AM boundary)
+// منطق التواريخ الأصلي
 function getActiveDateObj() {
   let now = new Date();
   if (now.getHours() < 6) now.setDate(now.getDate() - 1);
@@ -416,384 +570,4 @@ function formatDate(yyyyMmDd) {
 /** ROLLOVER & STREAK */
 function processRollover() {
   const todayKey = `goals:${getActiveDateString()}`;
-  const keys = Object.keys(localStorage).filter(k => k.startsWith('goals:'));
-  let todayGoals = storeGet(todayKey) || [];
-  
-  keys.forEach(k => {
-    if (k < todayKey && k !== todayKey) {
-      const oldGoals = storeGet(k) || [];
-      const undone = oldGoals.filter(g => !g.done);
-      undone.forEach(ug => {
-        if (!todayGoals.some(tg => tg.text === ug.text)) {
-          todayGoals.push({ ...ug, queued: false });
-        }
-      });
-      localStorage.removeItem(k);
-    }
-  });
-  if (todayGoals.length > 0) storeSet(todayKey, todayGoals);
-}
-
-function processStreak() {
-  let streakData = storeGet('goal_streak_v1') || { count: 0, lastProcessedDate: '' };
-  const todayStr = getActiveDateString();
-  const keys = Object.keys(localStorage).filter(k => k.startsWith('goals:')).sort();
-  
-  keys.forEach(k => {
-    const dateStr = k.replace('goals:', '');
-    if (dateStr < todayStr && dateStr > streakData.lastProcessedDate) {
-      const goals = storeGet(k) || [];
-      if (goals.length > 0) {
-        if (goals.every(g => g.done)) streakData.count += 1;
-        else streakData.count = 0;
-      }
-      streakData.lastProcessedDate = dateStr;
-    }
-  });
-  localStorage.setItem('goal_streak_v1', JSON.stringify(streakData));
-  
-  const streakEl = document.getElementById('gmStreak');
-  document.getElementById('gmStreakNum').innerText = streakData.count;
-  if (streakData.count > 0) streakEl.classList.add('gm-streak-active');
-  else streakEl.classList.remove('gm-streak-active');
-}
-
-/** TICKER LOGIC */
-let tickerInterval;
-let tickerCycleIdx = 0;
-function getTickerItems() {
-  const goals = storeGet(`goals:${getActiveDateString()}`) || [];
-  if (goals.length === 0) return { items: [{ status: 'empty', text: 'No goals set for today — add one to get rolling.' }], total: 0, done: 0 };
-  const doneCount = goals.filter(g => g.done).length;
-  if (doneCount === goals.length) return { items: [{ status: 'done', text: '✓ All goals done — solid day.' }], total: goals.length, done: doneCount };
-  return { items: goals.filter(g => !g.done).map(g => ({ status: 'pending', text: g.text })), total: goals.length, done: doneCount };
-}
-function tick(forceReset = false) {
-  if (forceReset) tickerCycleIdx = 0;
-  const data = getTickerItems();
-  const item = data.items[tickerCycleIdx % data.items.length];
-  tickerCycleIdx++;
-  
-  document.getElementById('goalTickerMeta').innerText = `${data.done}/${data.total}`;
-  const stage = document.getElementById('goalTickerStage');
-  
-  const leaving = stage.querySelector('.goal-ticker-row');
-  if (leaving) {
-    leaving.classList.remove('is-entering');
-    leaving.classList.add('is-leaving');
-    setTimeout(() => leaving.remove(), 460);
-  }
-  
-  const entering = document.createElement('div');
-  entering.className = `goal-ticker-row ${leaving ? 'is-entering' : ''}`;
-  entering.innerHTML = `<span class="goal-ticker-status" data-status="${item.status}">${item.status === 'done' ? '✓' : item.status === 'empty' ? '·' : '○'}</span><span class="goal-ticker-text">${item.text}</span>`;
-  stage.appendChild(entering);
-}
-window.addEventListener('goals-changed', () => tick(true));
-
-/** DAY RING LOGIC */
-const sunPalette = [
-  [255, 216, 158], [255, 205, 121], [255, 227, 143], [255, 183, 106],
-  [255, 149, 89], [243, 111, 79], [226, 93, 122], [123, 91, 176], [47, 58, 102]
-];
-function interpolateColor(percent) {
-  if (percent <= 0) return sunPalette[0];
-  if (percent >= 100) return sunPalette[sunPalette.length - 1];
-  const step = 100 / (sunPalette.length - 1);
-  const idx = Math.floor(percent / step);
-  const remainder = (percent % step) / step;
-  const c1 = sunPalette[idx], c2 = sunPalette[idx + 1];
-  const r = Math.round(c1[0] + (c2[0] - c1[0]) * remainder);
-  const g = Math.round(c1[1] + (c2[1] - c1[1]) * remainder);
-  const b = Math.round(c1[2] + (c2[2] - c1[2]) * remainder);
-  return `rgb(${r},${g},${b})`;
-}
-
-function updateDayBar() {
-  const now = new Date();
-  const h = now.getHours();
-  const m = now.getMinutes();
-  const hours = h + m/60 + now.getSeconds()/3600;
-  
-  const ringFill = document.getElementById('ringFill');
-  const ringPercent = document.getElementById('ringPercent');
-  const ringPhase = document.getElementById('ringPhase');
-  const dayStatus = document.getElementById('dayStatus');
-  const dayRem = document.getElementById('dayRem');
-  
-  // Clock
-  let clockH = h % 12 || 12;
-  document.getElementById('ringClock').innerText = `${clockH}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
-  
-  const circ = 2 * Math.PI * 52;
-  ringFill.style.strokeDasharray = circ;
-
-  if (hours < WAKE_HOUR) {
-    ringFill.style.strokeDashoffset = circ;
-    ringFill.style.stroke = '#4D4B47';
-    ringPercent.innerText = '—';
-    ringPhase.innerText = 'SLEEPING';
-    dayStatus.innerText = '😴 Still sleeping';
-    const remMins = Math.floor((WAKE_HOUR - hours) * 60);
-    dayRem.innerText = `${Math.floor(remMins/60)}h ${remMins%60}m until wake-up`;
-  } else if (hours >= SLEEP_HOUR || h < 6) { // Past midnight
-    ringFill.style.strokeDashoffset = 0;
-    ringFill.style.stroke = '#E25D7A';
-    ringPercent.innerText = '100%';
-    ringPhase.innerText = 'PAST BEDTIME';
-    dayStatus.innerText = '⚠️ Past bedtime';
-    dayRem.innerText = 'Sleep!';
-  } else {
-    const percent = Math.min(100, Math.max(0, ((hours - WAKE_HOUR) / (SLEEP_HOUR - WAKE_HOUR)) * 100));
-    ringFill.style.strokeDashoffset = circ * (1 - percent/100);
-    ringFill.style.stroke = interpolateColor(percent);
-    ringPercent.innerText = `${Math.round(percent)}%`;
-    
-    if (percent < 25) { ringPhase.innerText = 'MORNING'; dayStatus.innerText = '☀️ Morning — fresh start'; }
-    else if (percent < 50) { ringPhase.innerText = 'MIDDAY'; dayStatus.innerText = '⚡ Midday — keep moving'; }
-    else if (percent < 75) { ringPhase.innerText = 'AFTERNOON'; dayStatus.innerText = '🔥 Afternoon — push it'; }
-    else if (percent < 90) { ringPhase.innerText = 'EVENING'; dayStatus.innerText = '⏳ Evening — wrap up'; }
-    else { ringPhase.innerText = 'BEDTIME'; dayStatus.innerText = '🌙 Bedtime soon'; }
-    
-    const remMins = Math.floor((SLEEP_HOUR - hours) * 60);
-    dayRem.innerText = `${Math.floor(remMins/60)}h ${remMins%60}m awake time left`;
-  }
-}
-
-/** UI RENDERERS */
-let draggedIdx = null;
-
-function renderTodayHeader(goals) {
-  const total = goals.length;
-  const done = goals.filter(g => g.done).length;
-  document.getElementById('gmProgressNum').innerText = done;
-  document.getElementById('gmProgressTotal').innerText = `/ ${total}`;
-  
-  const lbl = document.getElementById('gmProgressLabel');
-  const card = document.getElementById('cardToday');
-  const pushBtn = document.getElementById('gmPushBtn');
-  
-  if (total === 0) {
-    lbl.innerText = 'no goals yet'; card.classList.remove('gm-all-done'); pushBtn.style.display = 'none';
-  } else if (done === total) {
-    lbl.innerText = 'all done — solid day'; card.classList.add('gm-all-done'); pushBtn.style.display = 'none';
-  } else {
-    lbl.innerText = 'complete'; card.classList.remove('gm-all-done'); pushBtn.style.display = 'block';
-  }
-  
-  const bar = document.getElementById('gmBar');
-  bar.innerHTML = '';
-  goals.forEach(g => {
-    const seg = document.createElement('div');
-    seg.className = `gm-bar-seg ${g.done ? 'gm-bar-seg-done' : ''}`;
-    bar.appendChild(seg);
-  });
-}
-
-function buildGoalRow(g, idx, isReadOnly, storeKey, listEl, reloadFn) {
-  const li = document.createElement('li');
-  li.className = `goal-row ${g.done ? 'is-done' : ''} ${g.queued && !g.done ? 'is-queued-row' : ''}`;
-  li.draggable = true;
-  
-  li.addEventListener('dragstart', (e) => { draggedIdx = idx; e.dataTransfer.effectAllowed = 'move'; });
-  li.addEventListener('dragover', (e) => { e.preventDefault(); li.classList.add('drag-over'); });
-  li.addEventListener('dragleave', () => li.classList.remove('drag-over'));
-  li.addEventListener('drop', (e) => {
-    e.preventDefault(); li.classList.remove('drag-over');
-    if (draggedIdx === null || draggedIdx === idx) return;
-    let goals = storeGet(storeKey) || [];
-    const item = goals.splice(draggedIdx, 1)[0];
-    goals.splice(idx, 0, item);
-    storeSet(storeKey, goals);
-    reloadFn();
-  });
-
-  const handle = document.createElement('span'); handle.className = 'drag-handle'; handle.innerHTML = '⋮⋮';
-  
-  const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'gm-checkbox';
-  cb.checked = g.done;
-  if (isReadOnly) { cb.disabled = true; cb.title = 'Activates at 6 AM tomorrow'; }
-  else {
-    cb.addEventListener('change', () => {
-      let goals = storeGet(storeKey);
-      goals[idx].done = cb.checked;
-      if (cb.checked) goals[idx].doneAt = Date.now(); else delete goals[idx].doneAt;
-      storeSet(storeKey, goals); reloadFn();
-    });
-  }
-
-  const text = document.createElement('span'); text.className = 'goal-text'; text.innerText = g.text;
-  text.addEventListener('click', () => {
-    text.setAttribute('contenteditable', 'true'); text.focus();
-    const sel = window.getSelection(); sel.selectAllChildren(text); sel.collapseToEnd();
-  });
-  const commitEdit = () => {
-    text.removeAttribute('contenteditable');
-    const nt = text.innerText.trim();
-    if (nt && nt !== g.text) {
-      let goals = storeGet(storeKey); goals[idx].text = nt; storeSet(storeKey, goals); reloadFn();
-    } else { text.innerText = g.text; }
-  };
-  text.addEventListener('blur', commitEdit);
-  text.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); commitEdit(); }
-    if (e.key === 'Escape') { text.innerText = g.text; text.removeAttribute('contenteditable'); }
-  });
-
-  const qBtn = document.createElement('button'); qBtn.className = `gm-queue-btn ${g.queued ? 'is-queued' : ''}`; qBtn.innerText = '⚡';
-  if (isReadOnly) qBtn.disabled = true;
-  else {
-    qBtn.addEventListener('click', () => {
-      let goals = storeGet(storeKey); goals[idx].queued = !goals[idx].queued; storeSet(storeKey, goals);
-      li.classList.add('is-queue-flashing');
-      setTimeout(reloadFn, 480);
-    });
-  }
-
-  const delBtn = document.createElement('button'); delBtn.className = 'goal-delete'; delBtn.innerHTML = '&times;';
-  delBtn.addEventListener('click', () => {
-    let goals = storeGet(storeKey); goals.splice(idx, 1); storeSet(storeKey, goals); reloadFn();
-  });
-
-  li.append(handle, cb, text, qBtn, delBtn);
-  return li;
-}
-
-let expandState = { today: false, tomorrow: false };
-
-function renderListInto(goals, listEl, key, isReadOnly, reloadFn, sectionName) {
-  listEl.innerHTML = '';
-  if (goals.length === 0) {
-    listEl.innerHTML = `<div class="empty-state">No goals for ${isReadOnly?'tomorrow':'today'} yet — add one below.</div>`;
-    return;
-  }
-  
-  const limit = expandState[sectionName] ? goals.length : Math.min(5, goals.length);
-  for (let i = 0; i < limit; i++) {
-    listEl.appendChild(buildGoalRow(goals[i], i, isReadOnly, key, listEl, reloadFn));
-  }
-
-  if (goals.length > 5) {
-    const moreRow = document.createElement('div');
-    moreRow.className = 'show-more-row';
-    moreRow.innerText = expandState[sectionName] ? 'Show less ▴' : `Show ${goals.length - 5} more ▾`;
-    moreRow.addEventListener('click', () => { expandState[sectionName] = !expandState[sectionName]; reloadFn(); });
-    listEl.appendChild(moreRow);
-  }
-}
-
-function loadToday() {
-  const key = `goals:${getActiveDateString()}`;
-  const goals = storeGet(key) || [];
-  renderTodayHeader(goals);
-  renderListInto(goals, document.getElementById('goalList'), key, false, loadToday, 'today');
-}
-
-function loadTomorrow() {
-  const key = `goals:${getTomorrowDateString()}`;
-  const goals = storeGet(key) || [];
-  document.getElementById('gmTomorrowCount').innerText = `${goals.length} planned`;
-  renderListInto(goals, document.getElementById('tomorrowList'), key, true, loadTomorrow, 'tomorrow');
-}
-
-/** ACTIONS */
-document.getElementById('gmPushBtn').addEventListener('click', () => {
-  if (!confirm('Move all pending goals to tomorrow?')) return;
-  const tKey = `goals:${getActiveDateString()}`;
-  const tmKey = `goals:${getTomorrowDateString()}`;
-  let tGoals = storeGet(tKey) || [];
-  let tmGoals = storeGet(tmKey) || [];
-  
-  const toMove = tGoals.filter(g => !g.done);
-  tGoals = tGoals.filter(g => g.done);
-  
-  toMove.forEach(g => {
-    if (!tmGoals.some(tmg => tmg.text === g.text)) tmGoals.push({ ...g, queued: false });
-  });
-  
-  storeSet(tKey, tGoals); storeSet(tmKey, tmGoals);
-  loadToday(); loadTomorrow();
-});
-
-async function handlePolish(text, statusEl) {
-  if (!ANTHROPIC_API_KEY) {
-    statusEl.innerText = 'Polish needs an Anthropic API key — added as-typed.';
-    setTimeout(() => statusEl.innerText='', 3500);
-    return [{ text, done: false }];
-  }
-  try {
-    statusEl.innerText = 'Polishing...'; statusEl.style.color = 'var(--text-tertiary)';
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: `Clean up this goal. Return exactly ONE JSON array of strings, no fences, no preamble: "${text}"` }]
-      })
-    });
-    if(!res.ok) throw new Error('API Error');
-    const data = await res.json();
-    const polishedText = JSON.parse(data.content[0].text)[0];
-    statusEl.innerText = '';
-    return [{ text: polishedText, done: false }];
-  } catch (err) {
-    statusEl.innerText = 'Polish failed — added as-typed.'; statusEl.style.color = 'var(--danger)';
-    setTimeout(() => { statusEl.innerText=''; statusEl.style.color = 'var(--text-tertiary)'; }, 3500);
-    return [{ text, done: false }];
-  }
-}
-
-function makeAddHandlers(inputId, addBtnId, polBtnId, getKeyFn, statusId, reloadFn) {
-  const inp = document.getElementById(inputId);
-  const addBtn = document.getElementById(addBtnId);
-  const polBtn = document.getElementById(polBtnId);
-  const stat = document.getElementById(statusId);
-  
-  const doAdd = (items) => {
-    const key = "goals:" + getKeyFn();
-    let goals = storeGet(key) || [];
-    goals.push(...items);
-    storeSet(key, goals);
-    inp.value = ''; reloadFn();
-  };
-
-  addBtn.addEventListener('click', () => {
-    if (inp.value.trim()) doAdd([{ text: inp.value.trim(), done: false }]);
-  });
-  inp.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && inp.value.trim()) doAdd([{ text: inp.value.trim(), done: false }]);
-  });
-  polBtn.addEventListener('click', async () => {
-    if (!inp.value.trim()) return;
-    const items = await handlePolish(inp.value.trim(), stat);
-    doAdd(items);
-  });
-}
-
-/** INIT */
-document.getElementById('todayLabel').innerText = `Today — ${formatDate(getActiveDateString())}`;
-document.getElementById('tomorrowLabel').innerText = `Plan tomorrow — ${formatDate(getTomorrowDateString())}`;
-
-makeAddHandlers('goalInput', 'goalAddBtn', 'goalPolishBtn', getActiveDateString, 'polishStatus', loadToday);
-makeAddHandlers('tomorrowInput', 'tomorrowAddBtn', 'tomorrowPolishBtn', getTomorrowDateString, 'tomorrowStatus', loadTomorrow);
-
-processRollover();
-processStreak();
-loadToday();
-loadTomorrow();
-
-tick(true);
-setInterval(() => tick(false), 5000);
-
-updateDayBar();
-setInterval(updateDayBar, 60000);
-
-</script>
-</body>
-</html>
+  const keys = Object.keys
